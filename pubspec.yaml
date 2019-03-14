@@ -1,6 +1,6 @@
 name: flutter_maps
 description: Native maps for Flutter, embedded as a native view using the PlatformView API.
-version: 0.0.0
+version: 0.1.0
 author: Linus Unnebäck <linus@folkdatorn.se>
 homepage: https://github.com/LinusU/flutter_maps
 
