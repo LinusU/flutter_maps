@@ -7,22 +7,37 @@ import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import com.google.android.gms.maps.*
 
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import io.flutter.plugin.platform.PlatformView
 
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
 
-class FlutterMapController(private val id: Int, private val context: Context, private val activityState: AtomicInteger, private val registrar: Registrar): Application.ActivityLifecycleCallbacks, OnMapReadyCallback, PlatformView {
-  private val mapView = MapView(context)
+class FlutterMapController(
+        private val id: Int,
+        private val context: Context,
+        private val activityState: AtomicInteger,
+        private val registrar: Registrar,
+        private val options: GoogleMapOptions) : Application.ActivityLifecycleCallbacks,
+        OnMapReadyCallback, PlatformView, MethodChannel.MethodCallHandler {
+
+  private val mapView = MapView(context, options)
   private val registrarActivityHashCode = registrar.activity().hashCode()
 
   private var disposed = false
   private var googleMap: GoogleMap? = null
 
+  private var methodChannel: MethodChannel? = null
+
   init {
+    methodChannel = MethodChannel(registrar.messenger(), "com.linusu/flutter_maps_$id")
+    methodChannel?.setMethodCallHandler(this)
+
     when (activityState.get()) {
       STOPPED -> {
         mapView.onCreate(null)
@@ -68,6 +83,24 @@ class FlutterMapController(private val id: Int, private val context: Context, pr
     this.googleMap = googleMap
   }
 
+  override fun onMethodCall(p0: MethodCall, p1: MethodChannel.Result) {
+    when(p0.method) {
+      "zoomTo" -> zoomTo(p0, p1)
+    }
+  }
+
+  private fun zoomTo(methodCall: MethodCall, methodChannelResult: MethodChannel.Result) {
+    val latitude: Double? = methodCall.argument("lat")
+    val longitude: Double? = methodCall.argument("lng")
+    val zoomLevel: Double? = methodCall.argument("zoomLevel")
+    val camera = CameraPosition.builder()
+            .target(LatLng(latitude!!, longitude!!))
+            .zoom(zoomLevel!!.toFloat())
+            .build()
+
+    googleMap?.animateCamera(CameraUpdateFactory.newCameraPosition(camera))
+  }
+
   override fun dispose() {
     if (disposed) return;
     disposed = true
@@ -103,3 +136,4 @@ class FlutterMapController(private val id: Int, private val context: Context, pr
     if (!disposed && activity.hashCode() == registrarActivityHashCode) mapView.onDestroy()
   }
 }
+
