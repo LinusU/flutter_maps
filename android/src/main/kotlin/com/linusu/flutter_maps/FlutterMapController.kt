@@ -6,7 +6,6 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import com.google.android.gms.maps.*
 
@@ -15,7 +14,6 @@ import io.flutter.plugin.platform.PlatformView
 
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
@@ -82,7 +80,6 @@ class FlutterMapController(
 
   override fun onMapReady(googleMap: GoogleMap) {
     this.googleMap = googleMap
-    Log.d("altitude", "${googleMap.cameraPosition.zoom}")
   }
 
   override fun onMethodCall(p0: MethodCall, p1: MethodChannel.Result) {
