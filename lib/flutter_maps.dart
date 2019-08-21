@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_maps/CameraPosition.dart';
+import 'package:flutter_maps/FlutterMapController.dart';
+import 'package:flutter_maps/LatLng.dart';
 
 // class FlutterMaps {
 //   static const MethodChannel _channel =
@@ -13,23 +17,38 @@ import 'package:flutter/material.dart';
 //   }
 // }
 
+typedef void FlutterMapCreatedCallback(FlutterMapController controller);
+
 class FlutterMap extends StatefulWidget {
-  const FlutterMap();
+  final FlutterMapCreatedCallback onFlutterMapCreated;
+  final CameraPosition initialCameraPosition;
+
+  const FlutterMap({
+    Key key,
+    this.onFlutterMapCreated,
+    this.initialCameraPosition,
+  }) : super(key: key);
 
   @override
   State createState() => _FlutterMapState();
 }
 
 class _FlutterMapState extends State<FlutterMap> {
+
   @override
   Widget build(BuildContext context) {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return UiKitView(
         viewType: 'com.linusu/flutter_maps',
         onPlatformViewCreated: onPlatformViewCreated,
-        // gestureRecognizers: widget.gestureRecognizers,
-        // creationParams: creationParams,
-        // creationParamsCodec: const StandardMessageCodec(),
+        creationParams: <String, dynamic>{
+          "initialCameraPosition": <String, dynamic>{
+            "lat": widget.initialCameraPosition.coordinate.latitude,
+            "lng": widget.initialCameraPosition.coordinate.longitude,
+            "zoomLevel": widget.initialCameraPosition.zoomLevel,
+          },
+        },
+        creationParamsCodec: const StandardMessageCodec(),
       );
     }
 
@@ -37,6 +56,14 @@ class _FlutterMapState extends State<FlutterMap> {
       return AndroidView(
         viewType: 'com.linusu/flutter_maps',
         onPlatformViewCreated: onPlatformViewCreated,
+        creationParams: <String, dynamic>{
+          "initialCameraPosition": <String, dynamic>{
+            "lat": widget.initialCameraPosition.coordinate.latitude,
+            "lng": widget.initialCameraPosition.coordinate.longitude,
+            "zoomLevel": widget.initialCameraPosition.zoomLevel,
+          },
+        },
+        creationParamsCodec: const StandardMessageCodec(),
       );
     }
 
@@ -44,6 +71,9 @@ class _FlutterMapState extends State<FlutterMap> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    debugPrint("VIEW CREATED");
+    if (widget.onFlutterMapCreated == null) {
+      return;
+    }
+    widget.onFlutterMapCreated(FlutterMapController(id));
   }
 }

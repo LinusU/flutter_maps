@@ -2,37 +2,32 @@ import Flutter
 import UIKit
 import MapKit
 
-class FlutterMapsFactory: NSObject, FlutterPlatformViewFactory {
-    func create(withFrame frame: CGRect, viewIdentifier viewId: Int64, arguments args: Any?) -> FlutterPlatformView {
-        return FlutterMapsView(frame, viewId: viewId, args: args)
-    }
-}
-
-class FlutterMapsView: NSObject, FlutterPlatformView {
-    let frame: CGRect
-    let viewId: Int64
-
-    init(_ frame: CGRect, viewId: Int64, args: Any?) {
-        self.frame = frame
-        self.viewId = viewId
-    }
-
-    func view() -> UIView {
-        return MKMapView(frame: frame)
-    }
-}
-
 public class SwiftFlutterMapsPlugin: NSObject, FlutterPlugin {
+static var viewFactory: FlutterMapsFactory?
+    
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "flutter_maps", binaryMessenger: registrar.messenger())
+    let channel = FlutterMethodChannel(name: "com.linusu/flutter_maps", binaryMessenger: registrar.messenger())
     let instance = SwiftFlutterMapsPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
 
-    let viewFactory = FlutterMapsFactory()
-    registrar.register(viewFactory, withId: "com.linusu/flutter_maps")
+    viewFactory = FlutterMapsFactory()
+    registrar.register(viewFactory!, withId: "com.linusu/flutter_maps")
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    result("iOS " + UIDevice.current.systemVersion)
+    switch call.method {
+    case "zoomTo":
+        let arguments = call.arguments as? [String : Any]
+        let latitude = arguments?["lat"] as! Double
+        let longitude = arguments?["lng"] as! Double
+        var zoomLevel = arguments?["zoomLevel"] as! Double
+        zoomLevel = ZoomLevelConverter.convert(zoomLevel: zoomLevel)
+        let center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        let camera = MKMapCamera(lookingAtCenter: center, fromDistance: zoomLevel, pitch: 0.0, heading: 0.0)
+        SwiftFlutterMapsPlugin.viewFactory?.platformView?.mapView!.setCamera(camera, animated: true)
+        result(true)
+    default:
+        result(false)
+    }
   }
 }
