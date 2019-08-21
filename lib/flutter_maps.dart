@@ -34,15 +34,21 @@ class FlutterMap extends StatefulWidget {
 }
 
 class _FlutterMapState extends State<FlutterMap> {
+
   @override
   Widget build(BuildContext context) {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return UiKitView(
         viewType: 'com.linusu/flutter_maps',
         onPlatformViewCreated: onPlatformViewCreated,
-        // gestureRecognizers: widget.gestureRecognizers,
-        // creationParams: creationParams,
-        // creationParamsCodec: const StandardMessageCodec(),
+        creationParams: <String, dynamic>{
+          "initialCameraPosition": <String, dynamic>{
+            "lat": widget.initialCameraPosition.coordinate.latitude,
+            "lng": widget.initialCameraPosition.coordinate.longitude,
+            "zoomLevel": widget.initialCameraPosition.zoomLevel,
+          },
+        },
+        creationParamsCodec: const StandardMessageCodec(),
       );
     }
 
