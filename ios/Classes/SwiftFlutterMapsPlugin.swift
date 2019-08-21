@@ -20,7 +20,8 @@ static var viewFactory: FlutterMapsFactory?
         let arguments = call.arguments as? [String : Any]
         let latitude = arguments?["lat"] as! Double
         let longitude = arguments?["lng"] as! Double
-        let zoomLevel = arguments?["zoomLevel"] as! Double
+        var zoomLevel = arguments?["zoomLevel"] as! Double
+        zoomLevel = ZoomLevelConverter.convert(zoomLevel: zoomLevel)
         let center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         let camera = MKMapCamera(lookingAtCenter: center, fromDistance: zoomLevel, pitch: 0.0, heading: 0.0)
         SwiftFlutterMapsPlugin.viewFactory?.platformView?.mapView!.setCamera(camera, animated: true)

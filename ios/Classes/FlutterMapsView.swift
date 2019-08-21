@@ -18,7 +18,8 @@ class FlutterMapsView: NSObject, FlutterPlatformView {
         if let initialCameraPosition = params?["initialCameraPosition"] as? [String : Any] {
             let latitude = initialCameraPosition["lat"] as! Double
             let longitude = initialCameraPosition["lng"] as! Double
-            let zoomLevel = initialCameraPosition["zoomLevel"] as! Double
+            var zoomLevel = initialCameraPosition["zoomLevel"] as! Double
+            zoomLevel = ZoomLevelConverter.convert(zoomLevel: zoomLevel)
             let center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
             mapView?.camera = MKMapCamera(lookingAtCenter: center, fromDistance: zoomLevel, pitch: 0.0, heading: 0.0)
         }
