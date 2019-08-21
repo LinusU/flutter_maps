@@ -6,11 +6,11 @@ class FlutterMapController {
   MethodChannel _channel;
 
   FlutterMapController(id) {
-    _channel = MethodChannel('com.linusu/flutter_maps_$id');
+    _channel = MethodChannel('com.linusu/flutter_maps');
   }
 
   Future<bool> zoomTo({LatLng coordinate, double zoomLevel}) async {
-    return _channel.invokeMethod(
+    var result = await _channel.invokeMethod(
       'zoomTo',
       <String, double>{
         "lat": coordinate.latitude,
@@ -18,5 +18,6 @@ class FlutterMapController {
         "zoomLevel": zoomLevel,
       },
     );
+    return result;
   }
 }
